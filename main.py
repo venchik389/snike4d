@@ -10,15 +10,12 @@ class SnakeGame(ShowBase):
         self.score_text = OnscreenText(text="Score: 0", pos=(-1.3, 0.9), scale=0.07)
         # Настройка камеры
         self.disableMouse()
-        self.camera.setPos(0, -30, 30)
+        self.camera.setPos(0, -40, 30)
         self.camera.lookAt(0, 0, 0)
         
-        # Настройка линзы камеры на перспективу с FOV 90
-        
-
         # Инициализация змейки и еды
         self.snake = []
-        self.snake_direction = (1, 0, 0)  # Начальная скорость: вправо по оси X
+        self.snake_direction = (0, 0, 0)  # Начальная скорость: вправо по оси X
         self.create_snake()
         self.create_food()
 
@@ -29,6 +26,9 @@ class SnakeGame(ShowBase):
         self.accept('arrow_down', self.change_direction, ['DOWN'])
         self.accept('arrow_left', self.change_direction, ['LEFT'])
         self.accept('arrow_right', self.change_direction, ['RIGHT'])
+
+        # Создание стены из синих блоков
+        self.create_wall()
 
         # Основной цикл игры
         self.taskMgr.add(self.move_snake, 'move_snake')
@@ -50,8 +50,38 @@ class SnakeGame(ShowBase):
         self.food = self.loader.loadModel("models/box")
         self.food.setScale(1, 1, 1)
         self.food.setColor(1, 0, 0)
-        self.food.setPos(random.randint(-10, 10), random.randint(-10, 10), 0)
+        self.food.setPos(random.randint(-15, 15), random.randint(-15, 15), 0)
         self.food.reparentTo(self.render)
+
+    def create_wall(self):
+        """Создание стены из синих блоков"""
+        # Стена вдоль оси X
+        for y in range(self.field_boundaries[0], self.field_boundaries[1] + 1):
+            blue_block = self.loader.loadModel("models/box")
+            blue_block.setScale(1, 1, 1)
+            blue_block.setColor(0, 0, 1)  # Синий цвет
+            blue_block.setPos(self.field_boundaries[0], y, 0)  # Левая стена
+            blue_block.reparentTo(self.render)
+
+            blue_block = self.loader.loadModel("models/box")
+            blue_block.setScale(1, 1, 1)
+            blue_block.setColor(0, 0, 1)  # Синий цвет
+            blue_block.setPos(self.field_boundaries[1], y, 0)  # Правая стена
+            blue_block.reparentTo(self.render)
+
+        # Стена вдоль оси Y
+        for x in range(self.field_boundaries[0], self.field_boundaries[1] + 1):
+            blue_block = self.loader.loadModel("models/box")
+            blue_block.setScale(1, 1, 1)
+            blue_block.setColor(0, 0, 1)  # Синий цвет
+            blue_block.setPos(x, self.field_boundaries[0], 0)  # Нижняя стена
+            blue_block.reparentTo(self.render)
+
+            blue_block = self.loader.loadModel("models/box")
+            blue_block.setScale(1, 1, 1)
+            blue_block.setColor(0, 0, 1)  # Синий цвет
+            blue_block.setPos(x, self.field_boundaries[1], 0)  # Верхняя стена
+            blue_block.reparentTo(self.render)
 
     def change_direction(self, direction):
         """Изменение направления движения змейки"""
@@ -90,14 +120,14 @@ class SnakeGame(ShowBase):
 
         self.snake.insert(0, new_head)
 
-        # Убираем последний кусок (хвост), если не съедена еда
+        
         if self.snake[0].getPos() != self.food_position:
             tail = self.snake.pop()
             tail.removeNode()
         else:
-            # Змейка съела еду, создаем новую
+            # Змейка съела еду
             self.food_position = self.food.getPos()
-            self.food.setPos(random.randint(-10, 10), random.randint(-10, 10), 0)
+            self.food.setPos(random.randint(-15, 15), random.randint(-15, 15), 0)
             self.score += 1
             self.score_text.setText(f"Score: {self.score}")
 
